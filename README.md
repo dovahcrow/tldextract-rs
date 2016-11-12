@@ -1,4 +1,4 @@
-# tldextract
+# tldextract [![Travis](https://img.shields.io/travis/doomsplayer/tldextract-rs.svg)](https://crates.io/crates/tldextract) [![Crates.io](https://img.shields.io/crates/d/tldextract.svg)](https://crates.io/crates/tldextract)
 
 tldextract accurately separates the gTLD or ccTLD (generic or country code top-level domain)
 from the registered domain and subdomains of a URL. For example,
