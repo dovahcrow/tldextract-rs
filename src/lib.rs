@@ -29,17 +29,17 @@ extern crate hyper;
 // extern crate tokio_core;
 extern crate regex;
 
-mod errors;
+#[allow(missing_docs)]
+pub mod errors;
 mod cache;
 mod set;
 
-use url::Url;
-use url::Host;
+use url::{Url, Host};
 
 use idna::punycode;
 
 use set::Set;
-use errors::*;
+pub use errors::*;
 
 /// The option for `TldExtractor`.
 ///
