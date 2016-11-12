@@ -1,0 +1,2 @@
+- [ ] Support extra suffixes
+- [ ] Add tokio for async fetch tld from internet
