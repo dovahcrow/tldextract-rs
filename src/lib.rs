@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://wooya.me/tldextract")]
+#![doc(html_root_url = "http://wooya.me/tldextract-rs/tldextract/index.html")]
 #![deny(missing_docs)]
 
 //! # tldextract

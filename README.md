@@ -16,4 +16,4 @@ So, given a URL, it knows its subdomain from its domain, and its domain from its
 Thanks to [john-kurkowski](https://github.com/john-kurkowski),
 this project is mainly inspired (Ok, stolen) by his [work](https://github.com/john-kurkowski/tldextract) in python
 
-[documentation](https://docs.rs/tldextract/0.1.0/tldextract/)
+[documentation](http://wooya.me/tldextract-rs/tldextract/index.html)

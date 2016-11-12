@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Wu Young <doomsplayer@gmail.com>"]
 description = "extract domain info from a url"
 readme = "README.md"
-documentation = "http://hyperium.github.io/hyper"
-repository = "https://github.com/doomsplayer/tldextract"
+documentation = "http://wooya.me/tldextract-rs/tldextract/index.html"
+repository = "https://github.com/doomsplayer/tldextract-rs"
 license = "MIT"
 keywords = ["tld", "extract", "domain"]
 
@@ -24,3 +24,4 @@ regex = "^0.1"
 default = ["BTreeSet"]
 HashSet = []
 BTreeSet = []
+unstable = []
