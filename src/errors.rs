@@ -12,5 +12,9 @@ error_chain!{
              description("no host error")
              display("no such host: '{}'", t)
          }
+          EmptyDomainError {
+             description("domain should not be empty")
+             display("domain should not be empty")
+         }
     }
 }
