@@ -1,6 +1,6 @@
 [package]
 name = "tldextract"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Wu Young <doomsplayer@gmail.com>"]
 description = "extract domain info from a url"
 readme = "README.md"
@@ -11,12 +11,9 @@ keywords = ["tld", "extract", "domain"]
 
 [dependencies]
 url = "^1.2"
-error-chain = "^0.5"
+error-chain = "^0.7"
 idna = "0.1"
-# serde = "^0.8"
 serde_json = "^0.8"
-# tokio-core = "^0.1"
-# futures = "^0.1"
 hyper = "^0.9"
 regex = "^0.1"
 
