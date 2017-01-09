@@ -1,6 +1,6 @@
 [package]
 name = "tldextract"
-version = "0.3.0"
+version = "0.3.1-pre"
 authors = ["Wu Young <doomsplayer@gmail.com>"]
 description = "extract domain info from a url"
 readme = "README.md"
