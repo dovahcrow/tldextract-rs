@@ -25,7 +25,7 @@ extern crate error_chain;
 extern crate idna;
 extern crate serde_json;
 // extern crate futures;
-extern crate hyper;
+extern crate reqwest;
 // extern crate tokio_core;
 extern crate regex;
 
@@ -115,12 +115,10 @@ impl TldExtractor {
     fn extract_triple(&self, host: &str, naive_mode: bool) -> Result<TldResult> {
         let segs: Vec<_> = host.split('.')
             .filter(|&s| s != "")
-            .map(|seg| {
-                if seg.starts_with("xn--") {
-                    punycode::decode_to_string(seg.trim_left_matches("xn--")).unwrap_or(seg.into())
-                } else {
-                    seg.into()
-                }
+            .map(|seg| if seg.starts_with("xn--") {
+                punycode::decode_to_string(seg.trim_left_matches("xn--")).unwrap_or(seg.into())
+            } else {
+                seg.into()
             })
             .collect();
 

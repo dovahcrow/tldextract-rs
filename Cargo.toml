@@ -10,12 +10,12 @@ license = "MIT"
 keywords = ["tld", "extract", "domain"]
 
 [dependencies]
-url = "^1.2"
-error-chain = "^0.7"
+url = "1.2"
+error-chain = "0.9"
 idna = "0.1"
-serde_json = "^0.8"
-hyper = "^0.9"
-regex = "^0.1"
+serde_json = "0.9"
+reqwest = "0.4"
+regex = "0.2"
 
 [features]
 default = ["BTreeSet"]

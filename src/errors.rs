@@ -3,7 +3,7 @@ error_chain!{
     links {}
     foreign_links {
         JsonError(::serde_json::Error);
-        HttpError(::hyper::Error);
+        HttpError(::reqwest::Error);
         UrlParseError(::url::ParseError);
         IoError(::std::io::Error);
     }
