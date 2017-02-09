@@ -1,7 +1,7 @@
 [package]
 name = "tldextract"
 version = "0.3.1-pre"
-authors = ["Wu Young <doomsplayer@gmail.com>"]
+authors = ["Young Wu <doomsplayer@gmail.com>"]
 description = "extract domain info from a url"
 readme = "README.md"
 documentation = "http://wooya.me/tldextract-rs/tldextract/index.html"
