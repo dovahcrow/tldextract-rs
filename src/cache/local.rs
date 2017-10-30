@@ -9,6 +9,7 @@ use ::errors::*;
 pub fn get_tld_cache<'a, O>(cache_path: O) -> Result<Set<String>>
     where O: Into<Option<&'a str>>
 {
+    debug!("Trying using local cached TLD data");
     let cache_path = cache_path.into().unwrap_or(".tld_cache");
     let f = File::open(cache_path)?;
     Ok(from_reader(f)?)

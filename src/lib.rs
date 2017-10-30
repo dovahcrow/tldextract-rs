@@ -29,6 +29,9 @@ extern crate reqwest;
 // extern crate tokio_core;
 extern crate regex;
 
+#[macro_use]
+extern crate log;
+
 #[allow(missing_docs)]
 pub mod errors;
 mod cache;
@@ -57,7 +60,7 @@ pub use errors::*;
 ///
 /// let ext = TldExtractor::new(option);
 ///
-/// assert_eq!(ext.extract("https://m.facebook.com", None).unwrap(), TldResult::new("m", "facebook", "com"));
+/// assert_eq!(ext.extract("https://m.facebook.com").unwrap(), TldResult::new("m", "facebook", "com"));
 /// ```
 #[derive(Default)]
 pub struct TldOption {
@@ -68,7 +71,7 @@ pub struct TldOption {
     /// Should tldextract update local cache file if
     /// the cache is fetched from remote or from snapshot
     pub update_local: bool,
-    /// When cannot find valid suffix in PSL, should we naively
+    /// When cannot finding valid suffix in PSL, should we naively
     /// treat the last piece of URL as the suffix and
     /// the last but one piece as the domain?
     pub naive_mode: bool,
@@ -97,18 +100,31 @@ impl TldExtractor {
     }
 
     /// Extract (subdomain, domain, domain suffix) tuple from a given url
-    /// the optional `naive_mode` will override the universal setting in TldExtractor if set
-    pub fn extract<O>(&self, url: &str, naive_mode: O) -> Result<TldResult>
-        where O: Into<Option<bool>>
-    {
+    pub fn extract(&self, url: &str) -> Result<TldResult> {
+        self._extract(url, None)
+    }
+
+    /// Extract (subdomain, domain, domain suffix) tuple from a given url
+    /// but override the universal naive_mode in TldExtractor.
+    pub fn extract_naive(&self, url: &str) -> Result<TldResult> {
+        self._extract(url, true)
+    }
+
+    fn _extract<O: Into<Option<bool>>>(&self, url: &str, naive: O) -> Result<TldResult> {
         let u = Url::parse(url)?;
         let host = u.host().ok_or(ErrorKind::NoHostError(url.into()))?;
         match host {
             Host::Domain(host) => {
-                self.extract_triple(host, naive_mode.into().unwrap_or(self.naive_mode))
+                self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))
             }
-            Host::Ipv4(ip) => Ok(TldResult { domain: ip.to_string(), ..Default::default() }),
-            Host::Ipv6(ip) => Ok(TldResult { domain: ip.to_string(), ..Default::default() }),
+            Host::Ipv4(ip) => Ok(TldResult {
+                domain: ip.to_string(),
+                ..Default::default()
+            }),
+            Host::Ipv6(ip) => Ok(TldResult {
+                domain: ip.to_string(),
+                ..Default::default()
+            }),
         }
     }
 
@@ -133,7 +149,10 @@ impl TldExtractor {
             if let Some(_) = self.tld_cache.get(&exception_piece) {
                 continue;
             }
-            if let Some(_) = self.tld_cache.get(&piece).or(self.tld_cache.get(&wildcard_piece)) {
+            if let Some(_) = self.tld_cache.get(&piece).or(self.tld_cache.get(
+                &wildcard_piece,
+            ))
+            {
                 suffix = Some(piece);
 
                 domain = Some(segs[i - 1].to_string());
@@ -210,8 +229,9 @@ impl TldResult {
     ///   });
     /// ```
     pub fn new<'a, O, L>(subdomain: O, domain: &str, suffix: L) -> TldResult
-        where O: Into<Option<&'a str>>,
-              L: Into<Option<&'a str>>
+    where
+        O: Into<Option<&'a str>>,
+        L: Into<Option<&'a str>>,
     {
         TldResult {
             domain: domain.into(),

@@ -2,6 +2,7 @@ use ::set::Set;
 use ::errors::*;
 
 pub fn get_tld_cache() -> Result<Set<String>> {
+  debug!("Fallback, using local snapshot TLD data");
   Ok(BUNDLED_CACHE.iter().map(|s| s.to_string()).collect())
 }
 

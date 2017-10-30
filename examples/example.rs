@@ -1,0 +1,19 @@
+extern crate tldextract;
+extern crate env_logger;
+
+use std::env;
+
+use tldextract::{TldExtractor, TldOption};
+
+fn option() -> TldOption {
+    TldOption::default()
+}
+
+fn main() {
+    env::set_var("RUST_LOG", "tldextract=debug");
+    env_logger::init().unwrap();
+    let ext = TldExtractor::new(option());
+    let tld = ext.extract("http://forums.news.cnn.com/").unwrap();
+    println!("TLD for 'http://forums.news.cnn.com/' is '{:?}'", tld);
+
+}

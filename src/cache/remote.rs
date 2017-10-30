@@ -15,7 +15,8 @@ const PUBLIC_SUFFIX_RE: &'static str = r"^(?P<suffix>[.*!]*\w[\S]*)";
 
 
 pub fn get_tld_cache(private_domain: bool) -> Result<Set<String>> {
-    let client = Client::new()?;
+    debug!("Trying getting remote TLD data");
+    let client = Client::new();
     let reg = Regex::new(PUBLIC_SUFFIX_RE).unwrap();
 
     for u in PUBLIC_SUFFIX_LIST_URLS {

@@ -14,5 +14,5 @@ fn option() -> TldOption {
 #[bench]
 fn bench_cnn(b: &mut Bencher) {
     let ext = TldExtractor::new(option());
-    b.iter(|| ext.extract("http://forums.news.cnn.com/", None).unwrap())
+    b.iter(|| ext.extract("http://forums.news.cnn.com/").unwrap())
 }
