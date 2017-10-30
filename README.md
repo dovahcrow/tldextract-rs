@@ -14,6 +14,6 @@ by looking up the currently living ones according to the Public Suffix List.
 So, given a URL, it knows its subdomain from its domain, and its domain from its country code.
 
 Thanks to [john-kurkowski](https://github.com/john-kurkowski),
-this project is mainly inspired (Ok, stolen) by his [work](https://github.com/john-kurkowski/tldextract) in python
+this project is mainly inspired (well, stolen) by his [work](https://github.com/john-kurkowski/tldextract) in python
 
-[documentation](http://wooya.me/tldextract-rs/tldextract/index.html)
+[documentation](https://docs.rs/tldextract/0.5.0/tldextract/)
