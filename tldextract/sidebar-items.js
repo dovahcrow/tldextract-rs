@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["errors",""]],"struct":[["TldExtractor","The tld extractor, see TldOption for more docs."],["TldOption","The option for `TldExtractor`."],["TldResult","The Tld Result Type"]]});
