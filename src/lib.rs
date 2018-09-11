@@ -32,17 +32,17 @@ extern crate regex;
 #[macro_use]
 extern crate log;
 
+mod cache;
 #[allow(missing_docs)]
 pub mod errors;
-mod cache;
 mod set;
 
-use url::{Url, Host};
+use url::{Host, Url};
 
 use idna::punycode;
 
-use set::Set;
 pub use errors::*;
+use set::Set;
 
 /// The option for `TldExtractor`.
 ///
@@ -114,27 +114,28 @@ impl TldExtractor {
         let u = Url::parse(url)?;
         let host = u.host().ok_or(ErrorKind::NoHostError(url.into()))?;
         match host {
-            Host::Domain(host) => {
-                self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))
-            }
+            Host::Domain(host) => Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))),
             Host::Ipv4(ip) => Ok(TldResult {
-                domain: ip.to_string(),
+                domain: Some(ip.to_string()),
                 ..Default::default()
             }),
             Host::Ipv6(ip) => Ok(TldResult {
-                domain: ip.to_string(),
+                domain: Some(ip.to_string()),
                 ..Default::default()
             }),
         }
     }
 
-    fn extract_triple(&self, host: &str, naive_mode: bool) -> Result<TldResult> {
-        let segs: Vec<_> = host.split('.')
+    fn extract_triple(&self, host: &str, naive_mode: bool) -> TldResult {
+        let segs: Vec<_> = host
+            .split('.')
             .filter(|&s| s != "")
-            .map(|seg| if seg.starts_with("xn--") {
-                punycode::decode_to_string(seg.trim_left_matches("xn--")).unwrap_or(seg.into())
-            } else {
-                seg.into()
+            .map(|seg| {
+                if seg.starts_with("xn--") {
+                    punycode::decode_to_string(seg.trim_left_matches("xn--")).unwrap_or(seg.into())
+                } else {
+                    seg.into()
+                }
             })
             .collect();
 
@@ -149,19 +150,17 @@ impl TldExtractor {
             if let Some(_) = self.tld_cache.get(&exception_piece) {
                 continue;
             }
-            if let Some(_) = self.tld_cache.get(&piece).or(self.tld_cache.get(
-                &wildcard_piece,
-            ))
-            {
-                suffix = Some(piece);
 
-                domain = Some(segs[i - 1].to_string());
-
-                subdomain = if segs[0..i - 1].len() == 0 {
-                    None
+            if let Some(_) = self.tld_cache.get(&piece).or(self.tld_cache.get(&wildcard_piece)) {
+                if i == 0 {
+                    // The whole url is a suffix
+                    suffix = Some(piece);
                 } else {
-                    Some(segs[0..i - 1].join("."))
-                };
+                    suffix = Some(piece);
+                    domain = Some(segs[i - 1].to_string());
+                    subdomain = if segs[0..i - 1].len() == 0 { None } else { Some(segs[0..i - 1].join(".")) };
+                }
+
                 break;
             }
         }
@@ -173,25 +172,14 @@ impl TldExtractor {
             }
             domain = iter.next().map(|s| s.to_string());
             let maybe_subdomain = iter.collect::<Vec<_>>().join(".");
-            subdomain = if maybe_subdomain == "" {
-                None
-            } else {
-                Some(maybe_subdomain)
-            }
+            subdomain = if maybe_subdomain == "" { None } else { Some(maybe_subdomain) }
         }
 
-        if let Some(domain) = domain {
-            Ok(TldResult {
-                suffix: suffix,
-                subdomain: subdomain,
-                domain: domain,
-            })
-        } else {
-            Err(ErrorKind::EmptyDomainError.into())
+        TldResult {
+            suffix: suffix,
+            subdomain: subdomain,
+            domain: domain,
         }
-
-
-
     }
 }
 
@@ -202,12 +190,12 @@ impl TldExtractor {
 /// ```
 /// use tldextract::TldResult;
 ///
-/// TldResult { domain: "google".to_string(), subdomain: Some("www".to_string()), suffix: Some("com".to_string())};
+/// TldResult { domain: Some("google".to_string()), subdomain: Some("www".to_string()), suffix: Some("com".to_string())};
 /// ```
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct TldResult {
     /// The "google" part of "www.google.com"
-    pub domain: String,
+    pub domain: Option<String>,
     /// The "www" part of "www.google.com"
     pub subdomain: Option<String>,
     /// The "com" part of "www.google.com"
@@ -223,18 +211,19 @@ impl TldResult {
     /// use tldextract::TldResult;
     /// assert_eq!(TldResult::new("www", "google", "com"),
     ///   TldResult {
-    ///     domain: "google".to_string(),
+    ///     domain: Some("google".to_string()),
     ///     subdomain: Some("www".to_string()),
     ///     suffix: Some("com".to_string())
     ///   });
     /// ```
-    pub fn new<'a, O, L>(subdomain: O, domain: &str, suffix: L) -> TldResult
+    pub fn new<'a, O, P, Q>(subdomain: O, domain: P, suffix: Q) -> TldResult
     where
         O: Into<Option<&'a str>>,
-        L: Into<Option<&'a str>>,
+        P: Into<Option<&'a str>>,
+        Q: Into<Option<&'a str>>,
     {
         TldResult {
-            domain: domain.into(),
+            domain: domain.into().map(|s| s.into()),
             subdomain: subdomain.into().map(|s| s.into()),
             suffix: suffix.into().map(|s| s.into()),
         }

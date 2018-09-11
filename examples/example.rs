@@ -1,5 +1,5 @@
-extern crate tldextract;
 extern crate env_logger;
+extern crate tldextract;
 
 use std::env;
 
@@ -15,5 +15,4 @@ fn main() {
     let ext = TldExtractor::new(option());
     let tld = ext.extract("http://forums.news.cnn.com/").unwrap();
     println!("TLD for 'http://forums.news.cnn.com/' is '{:?}'", tld);
-
 }
