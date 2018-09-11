@@ -1,8 +1,10 @@
 use std::collections::HashSet;
-use std::io::Read;
 
+use futures::{Future, Stream};
+use hyper::{Body, Client};
+use hyper_tls::HttpsConnector;
 use regex::Regex;
-use reqwest::Client;
+use tokio::runtime::current_thread::Runtime;
 
 use errors::Result;
 
@@ -15,13 +17,18 @@ const PUBLIC_SUFFIX_RE: &'static str = r"^(?P<suffix>[.*!]*\w[\S]*)";
 
 pub fn get_tld_cache(private_domain: bool) -> Result<HashSet<String>> {
     debug!("Trying getting remote TLD data");
-    let client = Client::new();
+    let https = HttpsConnector::new(1).unwrap();
+    let client = Client::builder().build::<_, Body>(https);
+
     let reg = Regex::new(PUBLIC_SUFFIX_RE).unwrap();
 
+    let mut rt = Runtime::new()?;
+
     for u in PUBLIC_SUFFIX_LIST_URLS {
-        let mut resp = client.get(*u).send()?;
-        let mut buf = String::new();
-        let _ = resp.read_to_string(&mut buf)?;
+        let respfut = client.get(u.parse().unwrap());
+        let contentfut = respfut.and_then(|resp| resp.into_body().concat2());
+        let content = rt.block_on(contentfut)?;
+        let buf = String::from_utf8_lossy(&content);
 
         let buf = if !private_domain {
             buf.split("// ===BEGIN PRIVATE DOMAINS===").next().unwrap_or("")
