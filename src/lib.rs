@@ -21,7 +21,7 @@
 
 extern crate url;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate idna;
 extern crate serde_json;
 // extern crate futures;
@@ -35,14 +35,13 @@ extern crate log;
 mod cache;
 #[allow(missing_docs)]
 pub mod errors;
-mod set;
 
 use url::{Host, Url};
 
 use idna::punycode;
 
-pub use errors::*;
-use set::Set;
+pub use errors::{Result, TldExtractError};
+use std::collections::HashSet;
 
 /// The option for `TldExtractor`.
 ///
@@ -79,7 +78,7 @@ pub struct TldOption {
 
 /// The tld extractor, see TldOption for more docs.
 pub struct TldExtractor {
-    tld_cache: Set<String>,
+    tld_cache: HashSet<String>,
     naive_mode: bool,
 }
 
@@ -112,7 +111,7 @@ impl TldExtractor {
 
     fn _extract<O: Into<Option<bool>>>(&self, url: &str, naive: O) -> Result<TldResult> {
         let u = Url::parse(url)?;
-        let host = u.host().ok_or(ErrorKind::NoHostError(url.into()))?;
+        let host = u.host().ok_or(TldExtractError::NoHostError(url.into()))?;
         match host {
             Host::Domain(host) => Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))),
             Host::Ipv4(ip) => Ok(TldResult {

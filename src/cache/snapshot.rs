@@ -1,7 +1,8 @@
-use ::set::Set;
-use ::errors::*;
+use std::collections::HashSet;
 
-pub fn get_tld_cache() -> Result<Set<String>> {
+use errors::Result;
+
+pub fn get_tld_cache() -> Result<HashSet<String>> {
   debug!("Fallback, using local snapshot TLD data");
   Ok(BUNDLED_CACHE.iter().map(|s| s.to_string()).collect())
 }
@@ -7272,5 +7273,5 @@ pub const BUNDLED_CACHE: &'static [&'static str] = &[
   "org.bt",
   "tanohata.iwate.jp",
   "ofunato.iwate.jp",
-  "gildesk\u{00e5}l.no"
+  "gildesk\u{00e5}l.no",
 ];

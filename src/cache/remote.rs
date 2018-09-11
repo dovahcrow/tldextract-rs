@@ -1,11 +1,10 @@
+use std::collections::HashSet;
 use std::io::Read;
 
 use regex::Regex;
-
 use reqwest::Client;
 
-use errors::*;
-use set::Set;
+use errors::Result;
 
 const PUBLIC_SUFFIX_LIST_URLS: &'static [&'static str] = &[
     "https://publicsuffix.org/list/public_suffix_list.dat",
@@ -14,7 +13,7 @@ const PUBLIC_SUFFIX_LIST_URLS: &'static [&'static str] = &[
 
 const PUBLIC_SUFFIX_RE: &'static str = r"^(?P<suffix>[.*!]*\w[\S]*)";
 
-pub fn get_tld_cache(private_domain: bool) -> Result<Set<String>> {
+pub fn get_tld_cache(private_domain: bool) -> Result<HashSet<String>> {
     debug!("Trying getting remote TLD data");
     let client = Client::new();
     let reg = Regex::new(PUBLIC_SUFFIX_RE).unwrap();
