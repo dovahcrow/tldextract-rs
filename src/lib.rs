@@ -22,12 +22,13 @@
 extern crate url;
 #[macro_use]
 extern crate failure;
+extern crate futures;
+extern crate hyper;
+extern crate hyper_tls;
 extern crate idna;
-extern crate serde_json;
-// extern crate futures;
-extern crate reqwest;
-// extern crate tokio_core;
 extern crate regex;
+extern crate serde_json;
+extern crate tokio;
 
 #[macro_use]
 extern crate log;
