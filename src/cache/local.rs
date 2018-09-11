@@ -1,13 +1,14 @@
+use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
 
-use serde_json::{to_vec, from_reader};
+use serde_json::{from_reader, to_vec};
 
-use ::set::Set;
-use ::errors::*;
+use errors::Result;
 
-pub fn get_tld_cache<'a, O>(cache_path: O) -> Result<Set<String>>
-    where O: Into<Option<&'a str>>
+pub fn get_tld_cache<'a, O>(cache_path: O) -> Result<HashSet<String>>
+where
+    O: Into<Option<&'a str>>,
 {
     debug!("Trying using local cached TLD data");
     let cache_path = cache_path.into().unwrap_or(".tld_cache");
@@ -15,8 +16,9 @@ pub fn get_tld_cache<'a, O>(cache_path: O) -> Result<Set<String>>
     Ok(from_reader(f)?)
 }
 
-pub fn set_tld_cache<'a, O>(cache_path: O, tld_cache: &Set<String>) -> Result<()>
-    where O: Into<Option<&'a str>>
+pub fn set_tld_cache<'a, O>(cache_path: O, tld_cache: &HashSet<String>) -> Result<()>
+where
+    O: Into<Option<&'a str>>,
 {
     let cache_path = cache_path.into().unwrap_or(".tld_cache");
     let data = to_vec(tld_cache).expect("cannot serialize tld cache");
