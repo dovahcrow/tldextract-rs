@@ -89,50 +89,56 @@ impl TldExtractor {
     /// see TldOption for more docs.
     pub fn new(option: TldOption) -> TldExtractor {
         let cache_path = option.cache_path.as_ref().map(|s| &s[..]);
-        let tld_cache = cache::get_tld_cache(cache_path.clone(), option.private_domains);
+        let tld_cache = cache::get_tld_cache(cache_path, option.private_domains);
         if option.update_local {
             let _ = cache::set_tld_cache(cache_path, &tld_cache);
         }
         TldExtractor {
-            tld_cache: tld_cache,
+            tld_cache,
             naive_mode: option.naive_mode,
         }
     }
 
-    /// Extract (subdomain, domain, domain suffix) tuple from a given url
+    /// Extract (subdomain, domain, domain suffix) tuple from a given url or bare domain
     pub fn extract(&self, url: &str) -> Result<TldResult> {
         self._extract(url, None)
     }
 
-    /// Extract (subdomain, domain, domain suffix) tuple from a given url
+    /// Extract (subdomain, domain, domain suffix) tuple from a given url or bare domain
     /// but override the universal naive_mode in TldExtractor.
     pub fn extract_naive(&self, url: &str) -> Result<TldResult> {
         self._extract(url, true)
     }
 
     fn _extract<O: Into<Option<bool>>>(&self, url: &str, naive: O) -> Result<TldResult> {
-        let u = Url::parse(url)?;
-        let host = u.host().ok_or(TldExtractError::NoHostError(url.into()))?;
-        match host {
-            Host::Domain(host) => Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))),
-            Host::Ipv4(ip) => Ok(TldResult {
-                domain: Some(ip.to_string()),
-                ..Default::default()
-            }),
-            Host::Ipv6(ip) => Ok(TldResult {
-                domain: Some(ip.to_string()),
-                ..Default::default()
-            }),
+	if url.contains(':') {
+	    // : should only be in a URL, so parse as a URL
+            let u = Url::parse(url)?;
+            let host = u.host().ok_or_else(|| TldExtractError::NoHostError(url.into()))?;
+            match host {
+		Host::Domain(host) => Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))),
+		Host::Ipv4(ip) => Ok(TldResult {
+                    domain: Some(ip.to_string()),
+                    ..Default::default()
+		}),
+		Host::Ipv6(ip) => Ok(TldResult {
+                    domain: Some(ip.to_string()),
+                    ..Default::default()
+		}),
+	    }
+	} else {
+	    // no scheme, so assume we've just got a domain/subdomain, skip URL parsing
+	    Ok(self.extract_triple(url, naive.into().unwrap_or(self.naive_mode)))
         }
     }
 
     fn extract_triple(&self, host: &str, naive_mode: bool) -> TldResult {
         let segs: Vec<_> = host
             .split('.')
-            .filter(|&s| s != "")
+            .filter(|&s| !s.is_empty())
             .map(|seg| {
                 if seg.starts_with("xn--") {
-                    punycode::decode_to_string(seg.trim_left_matches("xn--")).unwrap_or(seg.into())
+                    punycode::decode_to_string(seg.trim_start_matches("xn--")).unwrap_or(seg.into())
                 } else {
                     seg.into()
                 }
@@ -147,18 +153,15 @@ impl TldExtractor {
             let exception_piece = "!".to_string() + &piece;
             let wildcard_piece = "*.".to_string() + &segs[i + 1..].join(".");
 
-            if let Some(_) = self.tld_cache.get(&exception_piece) {
+            if self.tld_cache.get(&exception_piece).is_some() {
                 continue;
             }
 
-            if let Some(_) = self.tld_cache.get(&piece).or(self.tld_cache.get(&wildcard_piece)) {
-                if i == 0 {
-                    // The whole url is a suffix
-                    suffix = Some(piece);
-                } else {
-                    suffix = Some(piece);
+            if self.tld_cache.get(&piece).or_else(|| self.tld_cache.get(&wildcard_piece)).is_some() {
+                suffix = Some(piece);
+                if i != 0 {
                     domain = Some(segs[i - 1].to_string());
-                    subdomain = if segs[0..i - 1].len() == 0 { None } else { Some(segs[0..i - 1].join(".")) };
+                    subdomain = if segs[0..i - 1].is_empty() { None } else { Some(segs[0..i - 1].join(".")) };
                 }
 
                 break;
@@ -172,13 +175,13 @@ impl TldExtractor {
             }
             domain = iter.next().map(|s| s.to_string());
             let maybe_subdomain = iter.collect::<Vec<_>>().join(".");
-            subdomain = if maybe_subdomain == "" { None } else { Some(maybe_subdomain) }
+            subdomain = if maybe_subdomain.is_empty() { None } else { Some(maybe_subdomain) }
         }
 
         TldResult {
-            suffix: suffix,
-            subdomain: subdomain,
-            domain: domain,
+            suffix,
+            subdomain,
+            domain,
         }
     }
 }

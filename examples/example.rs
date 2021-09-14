@@ -15,4 +15,6 @@ fn main() {
     let ext = TldExtractor::new(option());
     let tld = ext.extract("http://forums.news.cnn.com/").unwrap();
     println!("TLD for 'http://forums.news.cnn.com/' is '{:?}'", tld);
+    let tld = ext.extract("forums.news.cnn.com").unwrap();
+    println!("TLD for 'forums.news.cnn.com' is '{:?}'", tld);
 }
