@@ -62,7 +62,7 @@ use std::collections::HashSet;
 ///
 /// assert_eq!(ext.extract("https://m.facebook.com").unwrap(), TldResult::new("m", "facebook", "com"));
 /// ```
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct TldOption {
     /// The path to file for storing tld cache
     pub cache_path: Option<String>,
