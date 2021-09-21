@@ -78,6 +78,7 @@ pub struct TldOption {
 }
 
 /// The tld extractor, see TldOption for more docs.
+#[derive(Clone, Debug)]
 pub struct TldExtractor {
     tld_cache: HashSet<String>,
     naive_mode: bool,
