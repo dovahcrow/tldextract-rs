@@ -31,7 +31,9 @@ pub fn get_tld_cache(private_domain: bool) -> Result<HashSet<String>> {
         let buf = String::from_utf8_lossy(&content);
 
         let buf = if !private_domain {
-            buf.split("// ===BEGIN PRIVATE DOMAINS===").next().unwrap_or("")
+            buf.split("// ===BEGIN PRIVATE DOMAINS===")
+                .next()
+                .unwrap_or("")
         } else {
             &buf[..]
         };
