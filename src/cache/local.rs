@@ -22,7 +22,11 @@ where
 {
     let cache_path = cache_path.into().unwrap_or(".tld_cache");
     let data = to_vec(tld_cache).expect("cannot serialize tld cache");
-    let mut f = OpenOptions::new().truncate(true).write(true).create(true).open(cache_path)?;
+    let mut f = OpenOptions::new()
+        .truncate(true)
+        .write(true)
+        .create(true)
+        .open(cache_path)?;
     f.write_all(&data)?;
     Ok(())
 }

@@ -62,7 +62,7 @@ use std::collections::HashSet;
 ///
 /// assert_eq!(ext.extract("https://m.facebook.com").unwrap(), TldResult::new("m", "facebook", "com"));
 /// ```
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TldOption {
     /// The path to file for storing tld cache
     pub cache_path: Option<String>,
@@ -78,6 +78,7 @@ pub struct TldOption {
 }
 
 /// The tld extractor, see TldOption for more docs.
+#[derive(Debug)]
 pub struct TldExtractor {
     tld_cache: HashSet<String>,
     naive_mode: bool,
@@ -111,24 +112,28 @@ impl TldExtractor {
     }
 
     fn _extract<O: Into<Option<bool>>>(&self, url: &str, naive: O) -> Result<TldResult> {
-	if url.contains(':') {
-	    // : should only be in a URL, so parse as a URL
+        if url.contains(':') {
+            // : should only be in a URL, so parse as a URL
             let u = Url::parse(url)?;
-            let host = u.host().ok_or_else(|| TldExtractError::NoHostError(url.into()))?;
+            let host = u
+                .host()
+                .ok_or_else(|| TldExtractError::NoHostError(url.into()))?;
             match host {
-		Host::Domain(host) => Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode))),
-		Host::Ipv4(ip) => Ok(TldResult {
+                Host::Domain(host) => {
+                    Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode)))
+                }
+                Host::Ipv4(ip) => Ok(TldResult {
                     domain: Some(ip.to_string()),
                     ..Default::default()
-		}),
-		Host::Ipv6(ip) => Ok(TldResult {
+                }),
+                Host::Ipv6(ip) => Ok(TldResult {
                     domain: Some(ip.to_string()),
                     ..Default::default()
-		}),
-	    }
-	} else {
-	    // no scheme, so assume we've just got a domain/subdomain, skip URL parsing
-	    Ok(self.extract_triple(url, naive.into().unwrap_or(self.naive_mode)))
+                }),
+            }
+        } else {
+            // no scheme, so assume we've just got a domain/subdomain, skip URL parsing
+            Ok(self.extract_triple(url, naive.into().unwrap_or(self.naive_mode)))
         }
     }
 
@@ -157,11 +162,20 @@ impl TldExtractor {
                 continue;
             }
 
-            if self.tld_cache.get(&piece).or_else(|| self.tld_cache.get(&wildcard_piece)).is_some() {
+            if self
+                .tld_cache
+                .get(&piece)
+                .or_else(|| self.tld_cache.get(&wildcard_piece))
+                .is_some()
+            {
                 suffix = Some(piece);
                 if i != 0 {
                     domain = Some(segs[i - 1].to_string());
-                    subdomain = if segs[0..i - 1].is_empty() { None } else { Some(segs[0..i - 1].join(".")) };
+                    subdomain = if segs[0..i - 1].is_empty() {
+                        None
+                    } else {
+                        Some(segs[0..i - 1].join("."))
+                    };
                 }
 
                 break;
@@ -175,7 +189,11 @@ impl TldExtractor {
             }
             domain = iter.next().map(|s| s.to_string());
             let maybe_subdomain = iter.collect::<Vec<_>>().join(".");
-            subdomain = if maybe_subdomain.is_empty() { None } else { Some(maybe_subdomain) }
+            subdomain = if maybe_subdomain.is_empty() {
+                None
+            } else {
+                Some(maybe_subdomain)
+            }
         }
 
         TldResult {
