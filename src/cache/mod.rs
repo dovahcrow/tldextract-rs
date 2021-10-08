@@ -4,7 +4,7 @@ mod snapshot;
 
 use std::collections::HashSet;
 
-use errors::Result;
+use crate::errors::Result;
 
 pub fn get_tld_cache<'a, O>(local_path: O, private_domains: bool) -> HashSet<String>
 where

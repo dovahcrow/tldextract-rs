@@ -1,10 +1,9 @@
+use crate::errors::Result;
+use log::debug;
+use serde_json::{from_reader, to_vec};
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
 use std::io::Write;
-
-use serde_json::{from_reader, to_vec};
-
-use errors::Result;
 
 pub fn get_tld_cache<'a, O>(cache_path: O) -> Result<HashSet<String>>
 where

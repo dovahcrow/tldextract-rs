@@ -1,6 +1,6 @@
+use crate::errors::Result;
+use log::debug;
 use std::collections::HashSet;
-
-use errors::Result;
 
 pub fn get_tld_cache() -> Result<HashSet<String>> {
     debug!("Fallback, using local snapshot TLD data");

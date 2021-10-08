@@ -1,9 +1,21 @@
-use failure::Error;
+use thiserror::Error;
 
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub type Result<T> = ::std::result::Result<T, TldExtractError>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum TldExtractError {
-    #[fail(display = "no such host: '{}'", _0)]
+    #[error("no such host: '{0}'")]
     NoHostError(String),
+
+    #[error(transparent)]
+    UrlParse(#[from] url::ParseError),
+
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
 }

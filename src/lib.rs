@@ -19,30 +19,14 @@
 //! Thanks to [john-kurkowski](https://github.com/john-kurkowski),
 //! this project is mainly inspired (Ok, stolen) by his [work](https://github.com/john-kurkowski/tldextract) in python
 
-extern crate url;
-#[macro_use]
-extern crate failure;
-extern crate futures;
-extern crate hyper;
-extern crate hyper_tls;
-extern crate idna;
-extern crate regex;
-extern crate serde_json;
-extern crate tokio;
-
-#[macro_use]
-extern crate log;
-
 mod cache;
 #[allow(missing_docs)]
 pub mod errors;
 
-use url::{Host, Url};
-
-use idna::punycode;
-
 pub use errors::{Result, TldExtractError};
+use idna::punycode;
 use std::collections::HashSet;
+use url::{Host, Url};
 
 /// The option for `TldExtractor`.
 ///
@@ -51,30 +35,54 @@ use std::collections::HashSet;
 /// ```
 /// use tldextract::{TldExtractor, TldOption, TldResult};
 ///
-/// let option = TldOption {
-///    cache_path: Some(".tld_cache".to_string()),
-///    private_domains: false,
-///    update_local: false,
-///    naive_mode: false,
-/// };
-///
-/// let ext = TldExtractor::new(option);
+/// let ext: TldExtractor = TldOption::default().cache_path(".tld_cache").build();
 ///
 /// assert_eq!(ext.extract("https://m.facebook.com").unwrap(), TldResult::new("m", "facebook", "com"));
 /// ```
 #[derive(Default, Debug)]
 pub struct TldOption {
     /// The path to file for storing tld cache
-    pub cache_path: Option<String>,
+    cache_path: Option<String>,
     /// Whether to include private domains
-    pub private_domains: bool,
+    private_domains: bool,
     /// Should tldextract update local cache file if
     /// the cache is fetched from remote or from snapshot
-    pub update_local: bool,
+    update_local: bool,
     /// When cannot finding valid suffix in PSL, should we naively
     /// treat the last piece of URL as the suffix and
     /// the last but one piece as the domain?
-    pub naive_mode: bool,
+    naive_mode: bool,
+}
+
+impl TldOption {
+    /// Set cache_path
+    pub fn cache_path(mut self, path: &str) -> Self {
+        self.cache_path = Some(path.into());
+        self
+    }
+
+    /// Set private_domains
+    pub fn private_domains(mut self, b: bool) -> Self {
+        self.private_domains = b;
+        self
+    }
+
+    /// Set update_local
+    pub fn update_local(mut self, b: bool) -> Self {
+        self.update_local = b;
+        self
+    }
+
+    /// Set naive_mode
+    pub fn naive_mode(mut self, b: bool) -> Self {
+        self.naive_mode = b;
+        self
+    }
+
+    /// Build TldExtractor
+    pub fn build(self) -> TldExtractor {
+        TldExtractor::new(self)
+    }
 }
 
 /// The tld extractor, see TldOption for more docs.
@@ -114,10 +122,13 @@ impl TldExtractor {
     fn _extract<O: Into<Option<bool>>>(&self, url: &str, naive: O) -> Result<TldResult> {
         if url.contains(':') {
             // : should only be in a URL, so parse as a URL
+
             let u = Url::parse(url)?;
+
             let host = u
                 .host()
                 .ok_or_else(|| TldExtractError::NoHostError(url.into()))?;
+
             match host {
                 Host::Domain(host) => {
                     Ok(self.extract_triple(host, naive.into().unwrap_or(self.naive_mode)))
