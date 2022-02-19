@@ -10,6 +10,7 @@ pub enum TldExtractError {
     #[error(transparent)]
     UrlParse(#[from] url::ParseError),
 
+    #[cfg(feature = "remote")]
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 
