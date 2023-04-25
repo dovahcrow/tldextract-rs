@@ -7,20 +7,18 @@ use std::collections::HashSet;
 
 use crate::errors::Result;
 
-
 #[cfg(feature = "remote")]
 pub fn get_tld_cache<'a, O>(local_path: O, private_domains: bool) -> HashSet<String>
 where
     O: Into<Option<&'a str>>,
 {
     local::get_tld_cache(local_path)
-        .or_else(|_| remote::get_tld_cache(private_domains))    
+        .or_else(|_| remote::get_tld_cache(private_domains))
         .or_else(|_| snapshot::get_tld_cache())
         .unwrap()
 }
 
-
-pub fn get_tld_cache<'a, O>(local_path: O, private_domains: bool) -> HashSet<String>
+pub fn get_tld_cache<'a, O>(local_path: O, _private_domains: bool) -> HashSet<String>
 where
     O: Into<Option<&'a str>>,
 {
