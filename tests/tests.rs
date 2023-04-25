@@ -183,9 +183,9 @@ fn punycode2() {
     let ext = TldOption::default().build();
 
     assert_eq!(
-        ext.extract("http://xn--tub-1m9d15sfkkhsifsbqygyujjrw602gk4li5qqk98aca0w.google.com")
+        ext.extract("xn--tub-1m9d15sfkkhsifsbqygyujjrw602gk4li5q.google.com")
             .unwrap(),
-        TldResult::new("亲，您好，异常订单退款链接：tub", "google", "com")
+        TldResult::new("亲您好异常订单退款链接tub", "google", "com")
     );
 }
 
@@ -344,7 +344,7 @@ fn private_domains() {
 fn whole_url_is_a_suffix() {
     let ext = TldOption::default().build();
     assert_eq!(
-        ext.extract("https://es.gov.br").unwrap(),
-        TldResult::new(None, None, "es.gov.br")
+        ext.extract("https://shingo.aomori.jp").unwrap(),
+        TldResult::new(None, None, "shingo.aomori.jp")
     );
 }
