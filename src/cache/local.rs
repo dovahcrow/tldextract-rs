@@ -53,3 +53,69 @@ where
     f.write_all(&data)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn get_tld_from_local_file_option_none() {
+        let result = get_tld_from_local_file(None, false);
+        assert!(result.is_err());
+
+        let expected = std::io::ErrorKind::InvalidInput;
+        let kind = match result.unwrap_err() {
+            TldExtractError::Io(kind) => kind.kind(),
+            _ => std::io::ErrorKind::Other,
+        };
+        assert_eq!(kind, expected)
+    }
+
+    #[test]
+    fn get_tld_from_local_file_invalid_file() {
+        let result = get_tld_from_local_file(Some("".to_string()), false);
+        assert!(result.is_err());
+
+        let expected = std::io::ErrorKind::NotFound;
+        let kind = match result.unwrap_err() {
+            TldExtractError::Io(kind) => kind.kind(),
+            _ => std::io::ErrorKind::Other,
+        };
+        assert_eq!(kind, expected)
+    }
+
+    #[test]
+    fn get_tld_from_local_file_empty_file() {
+        let file_path: PathBuf = [
+            env!("CARGO_MANIFEST_DIR"),
+            "tests",
+            "public_suffix_list-empty_local_file.dat",
+        ]
+        .iter()
+        .collect();
+        let result = get_tld_from_local_file(Some(file_path.display().to_string()), true);
+        assert!(result.is_err());
+
+        let expected = std::io::ErrorKind::InvalidData;
+        let kind = match result.unwrap_err() {
+            TldExtractError::Io(kind) => kind.kind(),
+            _ => std::io::ErrorKind::Other,
+        };
+        assert_eq!(kind, expected)
+    }
+
+    #[test]
+    fn get_tld_from_local_file_raw_public_suffix_list() {
+        let file_path: PathBuf = [
+            env!("CARGO_MANIFEST_DIR"),
+            "tests",
+            "public_suffix_list-custom_local_file.dat",
+        ]
+        .iter()
+        .collect();
+        let result = get_tld_from_local_file(Some(file_path.display().to_string()), true);
+        assert!(result.is_ok());
+        assert!(!result.unwrap().is_empty())
+    }
+}
