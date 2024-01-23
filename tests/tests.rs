@@ -348,3 +348,22 @@ fn whole_url_is_a_suffix() {
         TldResult::new(None, None, "shingo.aomori.jp")
     );
 }
+
+#[test]
+fn public_suffix_list_custom_local_file() {
+    let file_path: std::path::PathBuf = [
+        env!("CARGO_MANIFEST_DIR"),
+        "tests",
+        "public_suffix_list-custom_local_file.dat",
+    ]
+    .iter()
+    .collect();
+    let ext = TldOption::default()
+        .local_public_suffix_file(file_path.display().to_string().as_str())
+        .private_domains(true)
+        .build();
+    assert_eq!(
+        ext.extract("www.dovahcrow.tldextract").unwrap(),
+        TldResult::new("www", "dovahcrow", "tldextract")
+    );
+}

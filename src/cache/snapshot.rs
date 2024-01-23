@@ -7,7 +7,7 @@ pub fn get_tld_cache() -> Result<HashSet<String>> {
     Ok(BUNDLED_CACHE.iter().map(|s| s.to_string()).collect())
 }
 
-pub const BUNDLED_CACHE: &'static [&'static str] = &[
+pub const BUNDLED_CACHE: &[&str] = &[
     "chikuho.fukuoka.jp",
     "\u{0c2d}\u{0c3e}\u{0c30}\u{0c24}\u{0c4d}",
     "\u{516c}\u{53f8}.hk",

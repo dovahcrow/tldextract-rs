@@ -43,6 +43,8 @@ use url::{Host, Url};
 pub struct TldOption {
     /// The path to file for storing tld cache
     cache_path: Option<String>,
+    /// The path to a local public suffix file
+    local_public_suffix_file: Option<String>,
     /// Whether to include private domains
     private_domains: bool,
     /// Should tldextract update local cache file if
@@ -58,6 +60,12 @@ impl TldOption {
     /// Set cache_path
     pub fn cache_path(mut self, path: &str) -> Self {
         self.cache_path = Some(path.into());
+        self
+    }
+
+    /// Set local_public_suffix_file
+    pub fn local_public_suffix_file(mut self, path: &str) -> Self {
+        self.local_public_suffix_file = Some(path.into());
         self
     }
 
@@ -98,7 +106,11 @@ impl TldExtractor {
     /// see TldOption for more docs.
     pub fn new(option: TldOption) -> TldExtractor {
         let cache_path = option.cache_path.as_ref().map(|s| &s[..]);
-        let tld_cache = cache::get_tld_cache(cache_path, option.private_domains);
+        let tld_cache = cache::get_tld_cache(
+            cache_path,
+            option.local_public_suffix_file,
+            option.private_domains,
+        );
         if option.update_local {
             let _ = cache::set_tld_cache(cache_path, &tld_cache);
         }
