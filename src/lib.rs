@@ -181,24 +181,28 @@ impl TldExtractor {
             let exception_piece = "!".to_string() + &piece;
             let wildcard_piece = "*.".to_string() + &segs[i + 1..].join(".");
 
-            if self.tld_cache.get(&exception_piece).is_some() {
-                continue;
-            }
-
             if self
                 .tld_cache
                 .get(&piece)
                 .or_else(|| self.tld_cache.get(&wildcard_piece))
                 .is_some()
             {
-                suffix = Some(piece);
-                if i != 0 {
-                    domain = Some(segs[i - 1].to_string());
-                    subdomain = if segs[0..i - 1].is_empty() {
-                        None
+                let subdomain_idx = if self.tld_cache.get(&exception_piece).is_some() {
+                    suffix = Some(wildcard_piece[2..].to_string());
+                    domain = Some(segs[i].to_string());
+                    i
+                } else {
+                    suffix = Some(piece);
+                    if i != 0 {
+                        domain = Some(segs[i - 1].to_string());
+                        i - 1
                     } else {
-                        Some(segs[0..i - 1].join("."))
-                    };
+                        0
+                    }
+                };
+
+                if subdomain_idx != 0 && !segs[0..subdomain_idx].is_empty() {
+                    subdomain = Some(segs[0..subdomain_idx].join("."));
                 }
 
                 break;

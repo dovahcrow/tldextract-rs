@@ -349,6 +349,59 @@ fn whole_url_is_a_suffix() {
     );
 }
 
+
+#[test]
+fn wildcards() {
+    let ext = TldOption::default().build();
+    // kawasaki.jp
+    assert_eq!(
+        ext.extract("kawasaki.jp").unwrap(),
+        TldResult::new(None, "kawasaki", "jp")
+    );
+    assert_eq!(
+        ext.extract("city.kawasaki.jp").unwrap(),
+        TldResult::new(None, "city", "kawasaki.jp")
+    );
+    assert_eq!(
+        ext.extract("sub-domain.city.kawasaki.jp").unwrap(),
+        TldResult::new("sub-domain", "city", "kawasaki.jp")
+    );
+    assert_eq!(
+        ext.extract("random.kawasaki.jp").unwrap(),
+        TldResult::new(None, None, "random.kawasaki.jp")
+    );
+    assert_eq!(
+        ext.extract("domain.random.kawasaki.jp").unwrap(),
+        TldResult::new(None, "domain", "random.kawasaki.jp")
+    );
+    assert_eq!(
+        ext.extract("sub-domain.domain.random.kawasaki.jp").unwrap(),
+        TldResult::new("sub-domain", "domain", "random.kawasaki.jp")
+    );
+
+    // ck
+    assert_eq!(
+        ext.extract("www.ck").unwrap(),
+        TldResult::new(None, "www", "ck")
+    );
+    assert_eq!(
+        ext.extract("sub-domain.www.ck").unwrap(),
+        TldResult::new("sub-domain", "www", "ck")
+    );
+    assert_eq!(
+        ext.extract("random.ck").unwrap(),
+        TldResult::new(None, None, "random.ck")
+    );
+    assert_eq!(
+        ext.extract("domain.random.ck").unwrap(),
+        TldResult::new(None, "domain", "random.ck")
+    );
+    assert_eq!(
+        ext.extract("sub-domain.domain.random.ck").unwrap(),
+        TldResult::new("sub-domain", "domain", "random.ck")
+    );
+}
+
 #[test]
 fn public_suffix_list_custom_local_file() {
     let file_path: std::path::PathBuf = [
